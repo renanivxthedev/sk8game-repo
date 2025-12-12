@@ -1,0 +1,90 @@
+extends Node
+
+# Main Menu Objects
+@onready var main_menu = $"."
+
+@export var player : PackedScene
+@export var level : PackedScene
+
+# Menus
+@onready var menu = main_menu.get_node("UI/Menu")
+@onready var level_menu = main_menu.get_node("UI/Level_Menu")
+
+# Main Menu
+@onready var buttons = menu.get_node("Buttons")
+
+@onready var levelSelect_button = buttons.get_node("LevelSelect_Button")
+@onready var settings_button = buttons.get_node("Settings_Button")
+
+# Level Menu
+@onready var levels = level_menu.get_node("Levels")
+@onready var level_frame = levels.get_node("Level_Frame")
+@onready var exit_button = level_menu.get_node("ExitButton")
+
+@onready var testingLevel3 = level_frame.get_node("HBoxContainer/TestingLevel3")
+
+# Backgrounds
+@onready var camera = main_menu.get_node("Background/Camera3D")
+
+
+
+
+
+signal level_to_load(levelToLoad)
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	start_menu()
+	level_select()
+
+# Processes uh idk fuck
+func _process(delta: float) -> void:
+	level_to_load.disconnect(load_level)
+	level_to_load.connect(load_level)
+
+# Menu Shenanigans
+func start_menu():
+	levelSelect_button.button_down.connect(
+		func levelSelect_chosen():
+			menu.visible = false
+			
+			level_menu.visible = true
+	)
+	
+	exit_button.button_down.connect(
+		func exitButton_chosen():
+			menu.visible = true
+			
+			level_menu.visible = false
+	)
+
+func level_select():
+	# Testing Level 3
+	testingLevel3.button_down.connect(
+		func loadLvl():
+			level_to_load.emit("TestingLevel3")
+	)
+
+
+# Loads levels
+func load_level(level):
+		var new_player = player.instantiate()
+		var level_parent = main_menu.get_parent().get_parent().get_node("Level")
+		
+		main_menu.get_parent().get_parent().add_child(new_player)
+		
+	
+		if level == "TestingLevel3":
+			level = preload("res://Levels/TestingLevels/level_testing_3.tscn").instantiate()
+			
+			
+			level_parent.add_child(level)
+			new_player.position = Vector3(0, 0 , 0)
+		else:
+			print("LEVEL DOESNT EXITST!")
+			
+		$Music/LakesideSongbook.stop()
+		
+		# Delete Main Menu
+		camera.current = false
+		main_menu.visible = false
